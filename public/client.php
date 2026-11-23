@@ -19,6 +19,7 @@
         #grid td.timeout { background: #555; font-size: .7rem; font-weight: normal; }
         #guess-form input { text-transform: uppercase; letter-spacing: .3rem; }
     </style>
+    <link rel="stylesheet" href="/assets/css/motus.css">
 </head>
 <body>
 <main class="container">
