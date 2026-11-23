@@ -1,0 +1,6 @@
+# Secrets (identifiants MySQL, clé JWT) : chacun crée son .env à partir de .env.example
+.env
+
+# Journaux générés par l'application
+logs/*
+!logs/.gitkeep
