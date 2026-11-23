@@ -111,21 +111,6 @@ small {
     font-size: 18px;
 }
 
-.box-age {
-    display: inline-grid;
-    place-items: center;
-    width: 86px;
-    height: 86px;
-    margin-top: 14px;
-    border: 3px solid var(--ink);
-    border-radius: 50%;
-    font-family: var(--font-title);
-    font-size: 13px;
-    line-height: 1.15;
-    text-align: center;
-    transform: rotate(-8deg);
-}
-
 /* ---------- Fiches papier (formulaires) ---------- */
 
 #login-form,

@@ -15,7 +15,6 @@
     <h1 class="logo" aria-label="Motus"><span>M</span><span>O</span><span>T</span><span>U</span><span>S</span></h1>
     <div class="tagline">
         <p>Le jeu de lettres où il faut trouver le mot de 6 lettres avant l'autre. Chacun son tour, 8 secondes pour proposer, 8 essais en tout.</p>
-        <p class="box-age">Pour 2 joueurs, dès 10 ans</p>
     </div>
 
     <!-- 3.2 Formulaire d'authentification -->
