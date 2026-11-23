@@ -487,7 +487,8 @@
             error: function (xhr) {
                 let message = 'Erreur serveur, réessayez';
                 if (xhr.status === 400) message = 'Le mot doit contenir exactement 6 lettres, sans accent';
-                if (xhr.status === 409) message = 'Trop tard : ce n\'est plus votre tour';
+                if (xhr.status === 409) message = 'Ce n\'est pas votre tour';
+                if (xhr.status === 422) message = 'Temps écoulé : votre tour est passé';
                 showMessage('#guess-message', message, true);
             }
         });

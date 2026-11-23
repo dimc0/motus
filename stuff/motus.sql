@@ -19,14 +19,14 @@ CREATE TABLE `word` (
 --   player1_id        : celui qui lance la partie (il joue en premier)
 --   current_player_id : joueur dont c'est le tour
 --   turn_started_at   : début du tour en cours (pour le délai de 8 secondes)
---   status            : in_progress, won (mot trouvé), draw (8 propositions sans trouver : aucun gagnant)
+--   status            : in_progress, won (mot trouvé), lost (8 propositions sans trouver : aucun gagnant)
 CREATE TABLE `game` (
   `id` int NOT NULL AUTO_INCREMENT,
   `player1_id` int NOT NULL,
   `player2_id` int NOT NULL,
   `word` char(6) COLLATE utf8mb4_unicode_ci NOT NULL,
   `current_player_id` int NOT NULL,
-  `status` enum('in_progress','won','draw') COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT 'in_progress',
+  `status` enum('in_progress','won','lost') COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT 'in_progress',
   `winner_id` int DEFAULT NULL,
   `turn_started_at` datetime NOT NULL,
   `created_at` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,

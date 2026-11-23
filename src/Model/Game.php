@@ -13,6 +13,42 @@ class Game
         }
     }
 
+    // Transactions: the connection is shared (Database singleton), so every query made between
+    // beginTransaction() and commit() belongs to the same transaction
+    public function beginTransaction(): void
+    {
+        $this->conn?->beginTransaction();
+    }
+
+    public function commit(): void
+    {
+        if ($this->conn?->inTransaction()) {
+            $this->conn->commit();
+        }
+    }
+
+    public function rollBack(): void
+    {
+        if ($this->conn?->inTransaction()) {
+            $this->conn->rollBack();
+        }
+    }
+
+    // Locks the game row until the end of the transaction: a second request on the same game
+    // waits here, then sees the state left by the first one (SELECT ... FOR UPDATE)
+    public function lockById(int $id): void
+    {
+        try {
+            throwDbNullConnection($this->conn);
+
+            $stmt = $this->conn->prepare('SELECT id FROM game WHERE id = :id FOR UPDATE');
+            $stmt->bindParam(':id', $id, PDO::PARAM_INT);
+            $stmt->execute();
+        } catch (PDOException|Exception $e) {
+            logWithDate('Query failed', $e->getMessage());
+        }
+    }
+
     public function findRandomWord(): ?string
     {
         try {
@@ -173,7 +209,7 @@ class Game
         }
     }
 
-    // $status: 'won' (with the winner) or 'draw'
+    // $status: 'won' (with the winner) or 'lost' (nobody found the word)
     public function finish(int $gameId, string $status, ?int $winnerId): void
     {
         try {

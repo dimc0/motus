@@ -72,29 +72,46 @@ class GameController
         sendResponseCustom('Game state', $this->buildState((int) $gameId, (int) $userId));
     }
 
-    // POST /api/game/{id}/guess : the player whose turn it is proposes a word
+    // POST /api/game/{id}/guess : the player whose turn it is proposes a word.
+    // Everything happens in one transaction with the game row locked, so two simultaneous
+    // requests cannot both be accepted for the same turn.
     public function guess($userId, $gameId): void
     {
         $userId = (int) $userId;
         $gameId = (int) $gameId;
-        $game = $this->findGameOfPlayer($gameId, $userId);
+
+        $this->game->beginTransaction();
+        $this->game->lockById($gameId);
+        $game = $this->game->findById($gameId);
+
+        if (!$game) {
+            $this->fail('Not Found', 404);
+        }
+
+        if ($userId !== (int) $game['player1_id'] && $userId !== (int) $game['player2_id']) {
+            $this->fail('Forbidden', 403);
+        }
 
         if ($game['status'] !== 'in_progress') {
-            sendResponseCustom('Game is over', null, 'Error', 409);
-            exit(1);
+            $this->fail('Game is over', 409);
         }
 
         if ((int) $game['current_player_id'] !== $userId) {
-            // Either it is the opponent's turn, or this player's 8 seconds have just run out
-            sendResponseCustom('Not your turn', null, 'Error', 409);
+            $this->fail('Not your turn', 409);
+        }
+
+        // The server alone decides whether the 8 seconds are over (the browser countdown is only indicative)
+        if ((int) $game['turn_elapsed'] > self::TURN_SECONDS) {
+            $this->applyTimeout($game);
+            $this->game->commit();
+            sendResponseCustom('Time is up', null, 'Error', 422);
             exit(1);
         }
 
         // A word of the wrong length is refused and does not count as a guess
         $word = strtoupper(trim($_POST['word'] ?? ''));
         if (!preg_match('/^[A-Z]{' . self::WORD_LENGTH . '}$/', $word)) {
-            sendResponseCustom('The word must contain exactly ' . self::WORD_LENGTH . ' letters (A-Z)', null, 'Error', 400);
-            exit(1);
+            $this->fail('The word must contain exactly ' . self::WORD_LENGTH . ' letters (A-Z)', 400);
         }
 
         $result = computeGuessResult($game['word'], $word);
@@ -106,7 +123,17 @@ class GameController
             $this->game->setCurrentPlayer($gameId, $this->opponentOf($game, $userId));
         }
 
+        $this->game->commit();
+
         sendResponseCustom('Guess recorded', $this->buildState($gameId, $userId));
+    }
+
+    // Cancels the current transaction, then stops the request with an error
+    private function fail(string $message, int $code): never
+    {
+        $this->game->rollBack();
+        sendResponseCustom($message, null, 'Error', $code);
+        exit(1);
     }
 
     // Stops the request with 404 / 403 if the game does not exist or the user is not one of its players
@@ -154,7 +181,7 @@ class GameController
             return false;
         }
 
-        $this->game->finish($gameId, 'draw', null);
+        $this->game->finish($gameId, 'lost', null);
         return true;
     }
 

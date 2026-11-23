@@ -117,8 +117,8 @@ MCD des entités `user` et `refresh_token` avec spécification des types MySQL. 
     POST /api/game/{id}/guess
     ```
 
-Règles appliquées côté serveur : 6 lettres (sinon refusé, non compté), 8 propositions au total (sinon aucun gagnant),
-8 secondes par tour (au-delà, proposition vide et tour à l'adversaire). Le client interroge l'API toutes les 1,5 s
+Règles appliquées côté serveur : 6 lettres (sinon refusé, non compté), 8 propositions au total (sinon statut `lost`, aucun gagnant),
+8 secondes par tour (au-delà, proposition vide, tour à l'adversaire et 422 si le joueur soumet trop tard). Chaque proposition est traitée dans une transaction avec `SELECT ... FOR UPDATE` sur la partie (deux requêtes simultanées ne peuvent pas jouer le même tour). Le client interroge l'API toutes les 1,5 s
 (polling AJAX, pas de WebSocket).
 
 ## Structure du projet
