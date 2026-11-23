@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Client jQuery</title>
+    <title>Motus</title>
     <link rel="stylesheet" href="/assets/css/pico.min.css">
     <script src="/assets/js/jquery-3.7.1.min.js"></script>
     <style>
@@ -22,7 +22,7 @@
 </head>
 <body>
 <main class="container">
-    <h1>Client jQuery</h1>
+    <h1>Motus</h1>
 
     <!-- 3.2 Formulaire d'authentification -->
     <form id="login-form">

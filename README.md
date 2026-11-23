@@ -26,7 +26,8 @@ question : [Representational state transfer — Wikipédia](https://fr.wikipedia
 
 ## Modèle conceptuel des données
 
-MCD des entités `user` et `refresh_token` avec spécification des types MySQL.
+MCD des entités `user` et `refresh_token` avec spécification des types MySQL. Le jeu ajoute les tables `game`,
+`guess` et `word` (voir `stuff/motus.sql`).
 
 ![Native_PHP_RESTful_API_MCD](./stuff/native_php_restful_api.png)
 
@@ -49,22 +50,16 @@ MCD des entités `user` et `refresh_token` avec spécification des types MySQL.
 - Création d'un nouvel utilisateur :
 
     ```shell
-    POST /api/user/{id}
+    POST /api/user
     ```
 
-- Modification d'un utilisateur :
+- Modification d'un utilisateur (`pseudo`, `gender`, `avatar` uniquement, par le propriétaire du compte) :
 
     ```shell
     PATCH /api/user/{id}
     ```
 
-- Remplacement d'un utilisateur :
-
-    ```shell
-    PUT /api/user/{id}
-    ```
-
-- Suppression d'un utilisateur en fonction de son identifiant (`user.id`) :
+- Suppression d'un utilisateur (par le propriétaire du compte) :
 
     ```shell
     DELETE /api/user/{id}
@@ -75,20 +70,56 @@ MCD des entités `user` et `refresh_token` avec spécification des types MySQL.
 - Connexion :
 
     ```shell
-    POST /api/user/login
+    POST /api/login
     ```
 
 - Déconnexion :
 
     ```shell
-    POST /api/user/logout
+    POST /api/logout
     ```
 
 - Reconnexion (rafraîchissement du jeton d’accès) :
 
     ```shell
-    POST /api/user/token/refresh
+    POST /api/token/refresh
     ```
+
+### Jeu Motus
+
+- Joueurs connectés (requête dans les 30 dernières secondes) et sans partie en cours :
+
+    ```shell
+    GET /api/players
+    ```
+
+- Lancer une partie contre un joueur (`opponent_id`) : le créateur est le joueur 1 et joue en premier :
+
+    ```shell
+    POST /api/game
+    ```
+
+- Partie en cours de l'utilisateur connecté (`null` sinon) :
+
+    ```shell
+    GET /api/game/current
+    ```
+
+- État d'une partie (grille, tour, temps restant, résultat ; le mot n'est révélé qu'à la fin) :
+
+    ```shell
+    GET /api/game/{id}
+    ```
+
+- Proposer un mot de 6 lettres (`word`) :
+
+    ```shell
+    POST /api/game/{id}/guess
+    ```
+
+Règles appliquées côté serveur : 6 lettres (sinon refusé, non compté), 8 propositions au total (sinon aucun gagnant),
+8 secondes par tour (au-delà, proposition vide et tour à l'adversaire). Le client interroge l'API toutes les 1,5 s
+(polling AJAX, pas de WebSocket).
 
 ## Structure du projet
 
@@ -106,13 +137,16 @@ Arborescence des répertoires et sous-répertoires :
 │   ├── Security
 │   │   └── JwtService.php
 │   ├── Controller
+│   │   ├── GameController.php
 │   │   └── UserController.php
 │   └── Model
+│       ├── Game.php
 │       └── User.php
 ├── helpers
 │   ├── global_helper.php
 │   ├── http_response_helper.php
-│   └── jwt_helper.php
+│   ├── jwt_helper.php
+│   └── motus_helper.php
 ├── logs
 └── stuff
 
@@ -152,7 +186,7 @@ http://127.0.0.1:8000/client.php (deux origines différentes, donc deux sessions
 
 #### Pré-requis
 
-- PHP 8.1 ou version supérieure.
+- PHP 8.3 ou version supérieure (constantes de classe typées).
 - MySQL 8.0  ou version supérieure.
 - Git.
 
