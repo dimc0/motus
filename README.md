@@ -1,6 +1,10 @@
-# RESTful-like API en PHP natif
+# Motus multijoueur en PHP et jQuery
 
-## Avant-propos
+Projet « Technos legacy » (EFREI B3) : un Motus à deux joueurs, chacun sur son navigateur. Une application jQuery
+(AJAX, polling) dialogue avec une API en PHP natif et MySQL, construite à partir du boilerplate décrit ci-dessous.
+Lancement rapide : voir [Avec Docker](#avec-docker-recommandé).
+
+## Avant-propos (boilerplate d'origine)
 
 Ce projet à vocation pédagogique illustre une mise en œuvre simplifiée en PHP natif d'une API respectant en partie les
 contraintes architecturales REST.
