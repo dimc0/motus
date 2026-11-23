@@ -4,26 +4,19 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Motus</title>
-    <link rel="stylesheet" href="/assets/css/pico.min.css">
-    <script src="/assets/js/jquery-3.7.1.min.js"></script>
-    <style>
-        /* Grille du Motus */
-        #grid { border-collapse: separate; border-spacing: 4px; width: auto; }
-        #grid td { width: 3rem; height: 3rem; padding: 0; text-align: center; font-weight: bold;
-                   font-size: 1.4rem; border: 1px solid #888; color: #fff; }
-        #grid td.player { width: auto; border: none; font-size: .8rem; font-weight: normal;
-                          color: inherit; text-align: right; padding-right: .5rem; }
-        #grid td.R { background: #e00000; }                  /* bien placée */
-        #grid td.J { background: #ffd600; color: #000; }     /* mal placée */
-        #grid td.B { background: #1565c0; }                  /* absente */
-        #grid td.timeout { background: #555; font-size: .7rem; font-weight: normal; }
-        #guess-form input { text-transform: uppercase; letter-spacing: .3rem; }
-    </style>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Alfa+Slab+One&family=Karla:wght@400;600;700&display=swap">
     <link rel="stylesheet" href="/assets/css/motus.css">
+    <script src="/assets/js/jquery-3.7.1.min.js"></script>
 </head>
 <body>
 <main class="container">
-    <h1>Motus</h1>
+    <h1 class="logo" aria-label="Motus"><span>M</span><span>O</span><span>T</span><span>U</span><span>S</span></h1>
+    <div class="tagline">
+        <p>Le jeu de lettres où il faut trouver le mot de 6 lettres avant l'autre. Chacun son tour, 8 secondes pour proposer, 8 essais en tout.</p>
+        <p class="box-age">Pour 2 joueurs, dès 10 ans</p>
+    </div>
 
     <!-- 3.2 Formulaire d'authentification -->
     <form id="login-form">
@@ -37,15 +30,15 @@
     <!-- 3.4 Formulaire de création de compte -->
     <form id="signup-form">
         <h2>Créer un compte</h2>
-        <div class="grid">
+        <div class="fields">
             <label>Prénom <input type="text" name="first_name" required></label>
             <label>Nom <input type="text" name="last_name" required></label>
         </div>
-        <div class="grid">
+        <div class="fields">
             <label>Pseudo <input type="text" name="pseudo" required></label>
             <label>Date de naissance <input type="date" name="birth_date" required></label>
         </div>
-        <div class="grid">
+        <div class="fields">
             <label>Genre
                 <select name="gender" required>
                     <option value="m">Homme</option>
@@ -63,7 +56,14 @@
 
     <!-- Affiché uniquement une fois authentifié -->
     <section id="logged-in" style="display: none;">
-        <p>Vous êtes connecté.</p>
+        <!-- 3.3 Formulaire de désauthentification -->
+        <div class="topbar">
+            <p>Vous êtes connecté.</p>
+            <form id="logout-form">
+                <button type="submit" class="ghost">Se déconnecter</button>
+            </form>
+        </div>
+        <p id="logout-message"></p>
 
         <!-- 4. Motus : liste des joueurs connectés et disponibles -->
         <section id="lobby">
@@ -80,14 +80,20 @@
             <table id="grid"></table>
 
             <form id="guess-form" style="display: none;">
-                <fieldset role="group">
+                <div class="inline-field">
                     <input type="text" name="word" maxlength="6" autocomplete="off" placeholder="Mot de 6 lettres" required>
                     <button type="submit">Proposer</button>
-                </fieldset>
+                </div>
             </form>
             <p id="guess-message"></p>
 
-            <button type="button" id="back-to-lobby" style="display: none;">Retour à la liste des joueurs</button>
+            <ul class="legend">
+                <li><i class="R"></i>Lettre bien placée</li>
+                <li><i class="J"></i>Lettre présente mais mal placée</li>
+                <li><i class="B"></i>Lettre absente du mot</li>
+            </ul>
+
+            <button type="button" id="back-to-lobby" class="ghost" style="display: none;">Retour à la liste des joueurs</button>
         </section>
 
         <div id="account">
@@ -95,7 +101,7 @@
         <form id="update-form">
             <h2>Modifier mon profil</h2>
             <p><small>Seuls les champs remplis sont modifiés.</small></p>
-            <div class="grid">
+            <div class="fields">
                 <label>Pseudo <input type="text" name="pseudo"></label>
                 <label>Genre
                     <select name="gender">
@@ -113,16 +119,10 @@
 
         <!-- 3.6 Formulaire de suppression du compte -->
         <form id="delete-form">
-            <button type="submit" class="secondary">Supprimer mon compte</button>
+            <button type="submit" class="danger">Supprimer mon compte</button>
         </form>
         <p id="delete-message"></p>
         </div>
-
-        <!-- 3.3 Formulaire de désauthentification -->
-        <form id="logout-form">
-            <button type="submit">Se déconnecter</button>
-        </form>
-        <p id="logout-message"></p>
     </section>
 </main>
 <script>
@@ -140,12 +140,12 @@
     }
 
     function showMessage(selector, text, isError) {
-        $(selector).text(text).css('color', isError ? 'red' : 'green');
+        $(selector).text(text).removeClass('success error').addClass(isError ? 'error' : 'success');
     }
 
     // Affichage selon l'état d'authentification
     function showLoggedIn() {
-        $('#login-form, #signup-form').hide();
+        $('#login-form, #signup-form, .tagline').hide();
         $('#logged-in').show();
         $('#game').hide();
         $('#lobby, #account').show();
@@ -155,7 +155,7 @@
     function showLoggedOut() {
         stopPolling();
         $('#logged-in').hide();
-        $('#login-form, #signup-form').show();
+        $('#login-form, #signup-form, .tagline').show();
     }
 
     function endSession(message, isError) {
@@ -365,7 +365,8 @@
         }
         players.forEach(function (player) {
             // .text() et non .html() : un pseudo ne doit jamais pouvoir injecter du HTML
-            $('<button type="button" class="outline">').text(player.pseudo).css('margin', '0 .5rem .5rem 0')
+            $('<button type="button" class="player-chip">').text(player.pseudo)
+                .attr('data-initial', player.pseudo.charAt(0).toUpperCase()) // lettre affichée sur la boule
                 .on('click', function () { startGame(player.id); })
                 .appendTo(list);
         });
@@ -391,8 +392,10 @@
     let secondsLeft = 0;
     let countdownTimer = null;
     let wasMyTurn = false;
+    let shownGuesses = 0; // propositions déjà affichées, pour n'animer que les nouvelles
 
     function showGame(game) {
+        if (game.id !== currentGameId) shownGuesses = game.guesses.length; // pas d'animation à l'ouverture
         currentGameId = game.id;
         $('#lobby, #account').hide();
         $('#game').show();
@@ -404,7 +407,8 @@
         pseudos[game.player2.id] = game.player2.pseudo;
 
         $('#game-title').text('Partie contre ' + opponent.pseudo);
-        showGrid(game, pseudos);
+        showGrid(game, pseudos, shownGuesses);
+        shownGuesses = game.guesses.length;
 
         if (game.status !== 'in_progress') {
             showGameOver(game, me, opponent);
@@ -414,8 +418,9 @@
         secondsLeft = game.seconds_left;
         const turnText = game.your_turn ? 'À vous de jouer' : 'Au tour de ' + opponent.pseudo;
         const showTurn = function () {
-            $('#game-status').text(turnText + ' (' + secondsLeft + ' s) – proposition '
-                + (game.guesses.length + 1) + ' / ' + game.max_guesses);
+            $('#game-status').text(turnText + ', il reste ' + secondsLeft + ' s. Proposition '
+                + (game.guesses.length + 1) + ' sur ' + game.max_guesses + '.')
+                .toggleClass('urgent', game.your_turn && secondsLeft <= 3);
         };
         showTurn();
         clearInterval(countdownTimer);
@@ -434,11 +439,12 @@
     }
 
     // 8 lignes de 6 cases : les propositions jouées, puis des lignes vides
-    function showGrid(game, pseudos) {
+    function showGrid(game, pseudos, firstNewRow) {
         const grid = $('#grid').empty();
         for (let row = 0; row < game.max_guesses; row++) {
             const guess = game.guesses[row];
             const tr = $('<tr>').appendTo(grid);
+            if (guess && row >= firstNewRow) tr.addClass('reveal'); // dévoilement lettre par lettre (CSS)
             $('<td class="player">').text(guess ? pseudos[guess.player_id] : '').appendTo(tr);
 
             if (guess && guess.word === null) {
@@ -454,6 +460,7 @@
 
     function showGameOver(game, me, opponent) {
         clearInterval(countdownTimer);
+        $('#game-status').removeClass('urgent');
         wasMyTurn = false;
         $('#guess-form').hide();
         $('#back-to-lobby').show();

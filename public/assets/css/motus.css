@@ -1,145 +1,571 @@
-/* Thème Motus : se charge après Pico et ne fait qu'habiller la page (aucune logique ici) */
+/* Motus, version « jeu de société »
+   La page est une boîte de jeu ouverte : fond en carton kraft, lettres en tuiles de bois,
+   grille imprimée comme un plateau, joueurs en pions de couleur, formulaires en fiches papier.
+   Un seul thème, volontairement : c'est un objet physique, il n'a pas de « mode sombre ». */
 
-/* Couleur principale (boutons, liens, focus) : le bleu des cases "absente" */
-:root:not([data-theme]) {
-    --pico-primary: #1565c0;
-    --pico-primary-background: #1565c0;
-    --pico-primary-border: #1565c0;
-    --pico-primary-hover: #0d47a1;
-    --pico-primary-hover-background: #0d47a1;
-    --pico-primary-hover-border: #0d47a1;
-    --pico-primary-focus: rgba(21, 101, 192, .35);
-    --pico-border-radius: .6rem;
-    --motus-bg: #eef2f8;
-    --motus-empty-cell: #dfe5ee;
+:root {
+    color-scheme: light;
+
+    --kraft: #d6b98d;
+    --kraft-dark: #b8956a;
+    --paper: #fffcf5;
+    --ink: #3a2916;
+    --ink-soft: #6e5638;
+    --wood: #f3dfb6;
+    --wood-edge: #c9a36a;
+    --wood-shadow: #8c6a3e;
+    --board: #3b2f24;
+    --slot: #2a2119;
+
+    --red: #d42a2f;
+    --red-edge: #921419;
+    --yellow: #f4c21c;
+    --yellow-edge: #b48a05;
+    --blue: #2c5daa;
+    --blue-edge: #1a3a70;
+    --green: #2e8a57;
+
+    --font-title: "Alfa Slab One", "Rockwell", Georgia, serif;
+    --font-text: "Karla", "Trebuchet MS", Arial, sans-serif;
 }
 
-@media (prefers-color-scheme: dark) {
-    :root:not([data-theme]) {
-        --motus-bg: #0b1a33;
-        --motus-empty-cell: #1c2d4a;
-    }
+* {
+    box-sizing: border-box;
 }
 
+/* Carton kraft : couleur unie + grain léger (bruit SVG) */
 body {
-    background: var(--motus-bg);
+    margin: 0;
     min-height: 100vh;
+    background-color: var(--kraft);
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='g'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='3' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 .35 0 0 0 0 .24 0 0 0 0 .12 0 0 0 .18 0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23g)'/%3E%3C/svg%3E");
+    color: var(--ink);
+    font-family: var(--font-text);
+    font-size: 16px;
+    line-height: 1.5;
 }
 
 main.container {
-    max-width: 980px;
-    padding-top: 2rem;
-    padding-bottom: 3rem;
-}
-
-/* Titre */
-h1 {
-    text-align: center;
-    font-size: 3rem;
-    letter-spacing: .6rem;
-    text-transform: uppercase;
-    color: #e00000;
-    margin-bottom: 2rem;
-}
-
-/* Les blocs principaux deviennent des cartes */
-#login-form,
-#signup-form,
-#lobby,
-#game,
-#update-form {
-    background: var(--pico-card-background-color);
-    border-radius: 1rem;
-    box-shadow: 0 4px 18px rgba(0, 0, 0, .08);
-    padding: 1.75rem;
-    margin-bottom: 1.5rem;
+    display: grid;
+    gap: 28px;
+    max-width: 1000px;
+    margin: 0 auto;
+    padding-block: 32px 64px;
+    padding-left: max(16px, env(safe-area-inset-left, 0px));
+    padding-right: max(16px, env(safe-area-inset-right, 0px));
 }
 
 h2 {
-    font-size: 1.35rem;
-    margin-bottom: 1rem;
+    margin: 0;
+    font-family: var(--font-title);
+    font-size: 22px;
+    font-weight: 400;
+    text-wrap: balance;
 }
 
-/* Écran d'accueil : connexion et inscription côte à côte sur grand écran */
-@media (min-width: 900px) {
+p {
+    margin: 0;
+}
+
+small {
+    color: var(--ink-soft);
+    font-size: 14px;
+}
+
+:focus-visible {
+    outline: 3px solid var(--blue);
+    outline-offset: 3px;
+}
+
+/* ---------- Tuiles de bois (logo) ---------- */
+
+.logo {
+    display: flex;
+    gap: 6px;
+    margin: 0;
+}
+
+.logo span {
+    display: grid;
+    place-items: center;
+    width: 54px;
+    height: 54px;
+    border-radius: 6px;
+    background: linear-gradient(160deg, #f9ead0, var(--wood) 45%, #e6cb98);
+    box-shadow: inset 0 -3px 0 var(--wood-edge), 0 3px 0 var(--wood-shadow), 0 6px 8px rgba(58, 41, 22, .25);
+    color: var(--ink);
+    font-family: var(--font-title);
+    font-size: 30px;
+}
+
+/* La première lettre est donnée, peinte en rouge */
+.logo span:first-child {
+    background: var(--red);
+    box-shadow: inset 0 -3px 0 var(--red-edge), 0 3px 0 var(--red-edge), 0 6px 8px rgba(58, 41, 22, .25);
+    color: #fff;
+}
+
+/* Texte du dos de la boîte */
+.tagline {
+    max-width: 34ch;
+    font-size: 18px;
+}
+
+.box-age {
+    display: inline-grid;
+    place-items: center;
+    width: 86px;
+    height: 86px;
+    margin-top: 14px;
+    border: 3px solid var(--ink);
+    border-radius: 50%;
+    font-family: var(--font-title);
+    font-size: 13px;
+    line-height: 1.15;
+    text-align: center;
+    transform: rotate(-8deg);
+}
+
+/* ---------- Fiches papier (formulaires) ---------- */
+
+#login-form,
+#signup-form,
+#update-form {
+    display: grid;
+    gap: 14px;
+    padding: 24px;
+    border-radius: 3px;
+    background: var(--paper);
+    box-shadow: 0 1px 0 rgba(58, 41, 22, .12), 0 10px 22px -12px rgba(58, 41, 22, .55);
+}
+
+@media (min-width: 820px) {
     main.container {
-        display: grid;
-        grid-template-columns: 1fr 1.6fr;
-        gap: 1.5rem;
+        grid-template-columns: minmax(0, 1fr) minmax(0, 1.3fr);
+        column-gap: 48px;
         align-items: start;
     }
-    main.container > h1,
-    main.container > #logged-in {
-        grid-column: 1 / -1;
+
+    .logo,
+    .tagline {
+        grid-column: 1;
     }
+
+    .tagline {
+        grid-row: 2 / span 2;
+    }
+
     #login-form,
     #signup-form {
-        margin-bottom: 0;
+        grid-column: 2;
+    }
+
+    #login-form {
+        grid-row: 1 / span 2;
+    }
+
+    #logged-in {
+        grid-column: 1 / -1;
     }
 }
 
-/* Bandeau "Vous êtes connecté" */
-#logged-in > p:first-child {
-    text-align: center;
-    color: var(--pico-muted-color);
-}
+/* ---------- Champs : des lignes à remplir ---------- */
 
-/* Liste des joueurs */
-#players-list button {
-    border-radius: 2rem;
-    padding: .4rem 1.1rem;
-}
-
-/* Partie */
-#game {
-    text-align: center;
-}
-#game-title {
-    margin-bottom: .25rem;
-}
-#game-status {
+label {
+    display: grid;
+    gap: 4px;
+    color: var(--ink-soft);
+    font-size: 14px;
     font-weight: 600;
-    margin-bottom: 1.25rem;
+}
+
+input,
+select {
+    width: 100%;
+    padding: 7px 2px;
+    border: 0;
+    border-bottom: 2px dotted var(--kraft-dark);
+    border-radius: 0;
+    background: transparent;
+    color: var(--ink);
+    font: inherit;
+    font-weight: 400;
+}
+
+input:focus,
+select:focus {
+    border-bottom: 2px solid var(--ink);
+    outline: none;
+}
+
+.fields {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+    gap: 14px 20px;
+}
+
+/* ---------- Boutons : des jetons qu'on enfonce ---------- */
+
+button {
+    justify-self: start;
+    padding: 10px 20px;
+    border: 0;
+    border-radius: 10px;
+    background: var(--red);
+    box-shadow: 0 4px 0 var(--red-edge);
+    color: #fff;
+    font: inherit;
+    font-weight: 700;
+    cursor: pointer;
+    transition: transform .08s, box-shadow .08s;
+}
+
+button:active {
+    transform: translateY(3px);
+    box-shadow: 0 1px 0 var(--red-edge);
+}
+
+button.ghost {
+    background: var(--paper);
+    box-shadow: 0 4px 0 var(--wood-shadow);
+    color: var(--ink);
+}
+
+button.ghost:active {
+    box-shadow: 0 1px 0 var(--wood-shadow);
+}
+
+button.danger {
+    padding: 0;
+    background: none;
+    box-shadow: none;
+    color: var(--ink-soft);
+    font-weight: 600;
+    text-decoration: underline;
+}
+
+/* ---------- Messages ---------- */
+
+p:empty {
+    display: none;
+}
+
+.success {
+    color: var(--green);
+    font-weight: 700;
+}
+
+.error {
+    color: var(--red);
+    font-weight: 700;
+}
+
+/* ---------- Zone connectée ---------- */
+
+#logged-in {
+    display: grid;
+    gap: 36px;
+}
+
+.topbar {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+}
+
+.topbar p {
+    font-weight: 600;
+}
+
+/* ---------- Joueurs disponibles : des pions posés sur le carton ---------- */
+
+#lobby {
+    display: grid;
+    gap: 14px;
+}
+
+#players-list {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 18px 26px;
+    min-height: 96px;
+    color: var(--ink-soft);
+}
+
+.player-chip {
+    display: grid;
+    justify-items: center;
+    gap: 6px;
+    padding: 0;
+    border-radius: 0;
+    background: none;
+    box-shadow: none;
+    color: var(--ink);
+    font-weight: 700;
+}
+
+.player-chip:active {
+    transform: none;
+    box-shadow: none;
+}
+
+.player-chip::before {
+    content: attr(data-initial);
+    display: grid;
+    place-items: center;
+    width: 62px;
+    height: 62px;
+    border-radius: 50%;
+    background: var(--red);
+    box-shadow: inset 0 0 0 5px rgba(255, 255, 255, .18), 0 4px 0 var(--red-edge), 0 8px 10px rgba(58, 41, 22, .3);
+    color: #fff;
+    font-family: var(--font-title);
+    font-size: 26px;
+    transition: transform .15s;
+}
+
+.player-chip:nth-child(4n+2)::before {
+    background: var(--yellow);
+    box-shadow: inset 0 0 0 5px rgba(255, 255, 255, .25), 0 4px 0 var(--yellow-edge), 0 8px 10px rgba(58, 41, 22, .3);
+    color: var(--ink);
+}
+
+.player-chip:nth-child(4n+3)::before {
+    background: var(--blue);
+    box-shadow: inset 0 0 0 5px rgba(255, 255, 255, .18), 0 4px 0 var(--blue-edge), 0 8px 10px rgba(58, 41, 22, .3);
+}
+
+.player-chip:nth-child(4n+4)::before {
+    background: var(--green);
+    box-shadow: inset 0 0 0 5px rgba(255, 255, 255, .18), 0 4px 0 #1b5a37, 0 8px 10px rgba(58, 41, 22, .3);
+}
+
+.player-chip:hover::before {
+    transform: translateY(-5px);
+}
+
+/* ---------- Mon profil ---------- */
+
+#account {
+    display: grid;
+    gap: 14px;
+}
+
+#delete-form {
+    justify-self: end;
+}
+
+/* ---------- Partie : le plateau à gauche, le reste à droite ---------- */
+
+#game {
+    display: grid;
+    gap: 16px;
+    align-content: start;
+}
+
+@media (min-width: 760px) {
+    #game {
+        grid-template-columns: auto minmax(0, 1fr);
+        column-gap: 40px;
+    }
+
+    #game > #grid {
+        grid-column: 1;
+        grid-row: 1 / span 6;
+    }
+
+    #game > :not(#grid) {
+        grid-column: 2;
+    }
+}
+
+#game-title {
+    font-size: 28px;
+    line-height: 1.15;
+}
+
+/* Le chrono, écrit sur une étiquette papier */
+#game-status {
+    justify-self: start;
+    padding: 6px 12px;
+    border-radius: 3px;
+    background: var(--paper);
+    box-shadow: 0 6px 14px -10px rgba(58, 41, 22, .6);
+    font-weight: 700;
+    font-variant-numeric: tabular-nums;
+}
+
+#game-status.urgent {
+    color: var(--red);
 }
 
 #grid {
-    margin: 0 auto 1.5rem;
+    border-collapse: separate;
+    border-spacing: 5px;
+    padding: 10px;
+    border-radius: 10px;
+    background: var(--board);
+    box-shadow: inset 0 0 0 3px #4d3e30, 0 12px 24px -10px rgba(40, 25, 10, .7);
 }
+
+/* Case vide : un creux dans le plateau */
 #grid td {
-    border: none;
-    border-radius: .4rem;
-    background: var(--motus-empty-cell);
+    width: 50px;
+    height: 50px;
+    padding: 0;
+    border-radius: 6px;
+    background: var(--slot);
+    box-shadow: inset 0 3px 6px rgba(0, 0, 0, .55);
+    color: #fff;
+    font-family: var(--font-title);
+    font-size: 26px;
+    text-align: center;
+}
+
+#grid td.player {
+    width: auto;
+    max-width: 90px;
+    padding: 0 8px 0 2px;
+    overflow: hidden;
+    background: none;
+    box-shadow: none;
+    color: #cdb894;
+    font-family: var(--font-text);
+    font-size: 12px;
+    font-weight: 600;
+    text-align: right;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+/* Lettres jouées : tuiles peintes */
+#grid td.R {
+    background: var(--red);
+    box-shadow: inset 0 -3px 0 var(--red-edge), 0 2px 0 rgba(0, 0, 0, .4);
+}
+
+#grid td.B {
+    background: var(--blue);
+    box-shadow: inset 0 -3px 0 var(--blue-edge), 0 2px 0 rgba(0, 0, 0, .4);
+}
+
+#grid td.J {
+    border-radius: 50%;
+    background: var(--yellow);
+    box-shadow: inset 0 -3px 0 var(--yellow-edge), 0 2px 0 rgba(0, 0, 0, .4);
+    color: var(--ink);
+}
+
+#grid td.timeout {
+    background: repeating-linear-gradient(-45deg, #4a3c2f 0 8px, #42352a 8px 16px);
+    box-shadow: inset 0 3px 6px rgba(0, 0, 0, .4);
+    color: #cdb894;
+    font-family: var(--font-text);
+    font-size: 13px;
+    font-weight: 600;
+}
+
+/* Une nouvelle proposition se pose tuile par tuile */
+#grid tr.reveal td:not(.player) {
+    animation: pose .28s both;
+}
+
+#grid tr.reveal td:nth-child(3) { animation-delay: .07s; }
+#grid tr.reveal td:nth-child(4) { animation-delay: .14s; }
+#grid tr.reveal td:nth-child(5) { animation-delay: .21s; }
+#grid tr.reveal td:nth-child(6) { animation-delay: .28s; }
+#grid tr.reveal td:nth-child(7) { animation-delay: .35s; }
+
+@keyframes pose {
+    from { transform: translateY(-10px) scale(1.1); opacity: 0; }
+    to { transform: none; opacity: 1; }
+}
+
+/* Légende, comme la règle du jeu */
+.legend {
+    display: grid;
+    gap: 8px;
+    margin: 6px 0 0;
+    padding: 0;
+    list-style: none;
+    font-size: 15px;
+}
+
+.legend li {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.legend i {
+    width: 20px;
+    height: 20px;
+    border-radius: 4px;
+}
+
+.legend .R { background: var(--red); box-shadow: inset 0 -2px 0 var(--red-edge); }
+.legend .J { background: var(--yellow); box-shadow: inset 0 -2px 0 var(--yellow-edge); border-radius: 50%; }
+.legend .B { background: var(--blue); box-shadow: inset 0 -2px 0 var(--blue-edge); }
+
+.inline-field {
+    display: flex;
+    align-items: end;
+    gap: 14px;
+    max-width: 380px;
+}
+
+.inline-field input {
+    flex: 1;
+    min-width: 0;
+    border-bottom-style: solid;
+    font-family: var(--font-title);
+    font-size: 22px;
+    letter-spacing: .25em;
     text-transform: uppercase;
 }
-#grid td.player {
-    background: none;
-    color: var(--pico-muted-color);
-}
-#grid td.R { background: #e00000; }
-#grid td.J { background: #ffd600; border-radius: 50%; } /* rond jaune, comme à la télé */
-#grid td.B { background: #1565c0; }
-#grid td.timeout { background: #555; color: #fff; }
 
-#guess-form {
-    max-width: 420px;
-    margin: 0 auto;
+.inline-field input::placeholder {
+    font-family: var(--font-text);
+    font-size: 16px;
+    letter-spacing: normal;
+    text-transform: none;
 }
 
-/* Boutons du bas : modification, suppression et déconnexion */
-#account {
-    margin-bottom: 1rem;
+/* ---------- Téléphone ---------- */
+
+@media (max-width: 480px) {
+    .logo span {
+        width: 46px;
+        height: 46px;
+        font-size: 25px;
+    }
+
+    #grid {
+        border-spacing: 3px;
+        padding: 7px;
+    }
+
+    #grid td {
+        width: 36px;
+        height: 36px;
+        font-size: 18px;
+    }
+
+    #grid td.player {
+        max-width: 58px;
+        font-size: 11px;
+    }
 }
-#delete-form,
-#logout-form {
-    display: inline-block;
-    margin-right: .75rem;
-}
-#delete-form button {
-    background: #c62828;
-    border-color: #c62828;
-    color: #fff;
-}
-#logout-form button {
-    background: transparent;
-    color: var(--pico-primary);
+
+@media (prefers-reduced-motion: reduce) {
+    #grid tr.reveal td:not(.player) {
+        animation: none;
+    }
+
+    button,
+    .player-chip::before {
+        transition: none;
+    }
 }
